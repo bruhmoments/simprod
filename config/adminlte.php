@@ -466,4 +466,9 @@ return [
     */
 
     'livewire' => false,
+
+    'adminlte' => [
+        'use_cdn' => false,
+    ],
+
 ];
