@@ -58,6 +58,9 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <a href="{{ route('products.export') }}" id="export-link" class="btn btn-success">Download Excel</a>
+                </div>            
             </div>
             <br/>
             <table id="products-table" class="table table-bordered table-striped">
@@ -174,5 +177,16 @@
                 }
             });
         });
+
+        function filterCategory() {
+            var categoryId = $('#filter-category').value;
+            var exportLink = $('#export-link');
+            
+            if (categoryId) {
+                exportLink.href = "{{ route('products.export') }}" + "?category_id=" + categoryId;
+            } else {
+                exportLink.href = "{{ route('products.export') }}";
+            }
+        }
     </script>
 @stop

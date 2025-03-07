@@ -16,4 +16,5 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('/categories', \App\Http\Controllers\CategoryController::class);
     Route::resource('/products', \App\Http\Controllers\ProductController::class);
     Route::post('/get_products', [\App\Http\Controllers\ProductController::class, 'getProducts'])->name('products.getProducts');
+    Route::get('/export-products', [\App\Http\Controllers\ProductController::class, 'exportExcel'])->name('products.export');
 });

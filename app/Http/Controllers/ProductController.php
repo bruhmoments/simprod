@@ -7,6 +7,9 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\DataTables;
+use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
+use Box\Spout\Writer\Common\Creator\Style\StyleBuilder;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -135,5 +138,55 @@ class ProductController extends Controller
     {
         $product->delete();
         return redirect()->route('products.index')->with('success', 'Product deleted');
+    }
+
+    public function exportExcel(Request $req)
+    {
+        $products = Product::with('category');
+        
+        if ($req->category_id != 0 || $req->category_id != '')
+        {
+            $categoryId = $req->category_id;
+            $products->whereHas('category', function ($query) use ($categoryId) {
+                $query->where('id', $categoryId);
+            });
+        }
+        
+        $products= $products->get();
+        
+        // Path untuk file Excel
+        $filePath = storage_path('app/public/products.xlsx');
+
+        // Buat writer
+        $writer = WriterEntityFactory::createXLSXWriter();
+        $writer->openToFile($filePath);
+
+        // Style untuk header
+        $headerStyle = (new StyleBuilder())->setFontBold()->build();
+
+        // Header
+        $headerRow = WriterEntityFactory::createRowFromArray(
+            ['No', 'Nama Produk', 'Kategori', 'Harga Beli', 'Harga Jual', 'Stok'],
+            $headerStyle
+        );
+        $writer->addRow($headerRow);
+
+        // Data produk
+        foreach ($products as $index => $product) {
+            $row = WriterEntityFactory::createRowFromArray([
+                $index + 1,
+                // asset('product_images/' . $product->image_path),
+                $product->name,
+                $product->category->name,
+                $product->purchase_price,
+                $product->selling_price,
+                $product->stock,
+            ]);
+            $writer->addRow($row);
+        }
+
+        $writer->close();
+
+        return response()->download($filePath)->deleteFileAfterSend(true);
     }
 }
